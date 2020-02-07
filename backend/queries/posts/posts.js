@@ -2,7 +2,10 @@ const dataBase = require("../../database/index.js");
 
 const getposts = async (req, res, next) => {
   try {
-    let posts = await dataBase.any("SELECT * FROM posts");
+    let posts = await dataBase.any(
+      "SELECT posts.id, posts.type,posts.url_img, posts.body, posts.album_id, posts.user_id, posts.post_time, users.user_name FROM posts LEFT JOIN users ON posts.user_id = users.id;"
+    );
+
     res.status(200).json({
       posts,
       status: "success",
@@ -15,9 +18,10 @@ const getposts = async (req, res, next) => {
 
 const getpost = async (req, res, next) => {
   try {
-    let post = await dataBase.any("SELECT * FROM posts WHERE id=$1", [
-      req.params.id
-    ]);
+    let post = await dataBase.any(
+      "SELECT posts.id, posts.type,posts.url_img, posts.body, posts.album_id, posts.user_id, posts.post_time, users.user_name FROM posts LEFT JOIN users ON posts.user_id = users.id WHERE user_id=$1",
+      [req.params.userId]
+    );
     res.status(200).json({
       post,
       status: "success",
@@ -30,11 +34,10 @@ const getpost = async (req, res, next) => {
 
 const newpost = async (req, res, next) => {
   try {
-    let newpost = await dataBase.any(
-      `INSERT INTO posts (type,body,album_id,user_id) VALUES ('${req.body.type}','${req.body.body}',${req.body.album_id},${req.body.user_id} RETURNING *)`
+    await dataBase.none(
+      `INSERT INTO posts (type,body,url_img,album_id,user_id) VALUES ('${req.body.type}','${req.body.body}','${req.body.url_img}',${req.body.album_id},${req.body.user_id} )`
     );
     res.status(200).json({
-      newpost,
       status: "success",
       message: "post created "
     });
